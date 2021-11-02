@@ -1,0 +1,21 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  docker build -t athlant/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run athlant/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t athlant/multi-client ./client
+  - docker build -t athlant/multi-nginx ./nginx
+  - docker build -t athlant/multi-server ./server
+  - docker build -t athlant/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push athlant/multi-client
+  - docker push athlant/multi-nginx
+  - docker push athlant/multi-server
+  - docker push athlant/multi-worker
+  
